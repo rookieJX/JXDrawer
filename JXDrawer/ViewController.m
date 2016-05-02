@@ -30,21 +30,33 @@
     // 添加手势
     UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(pan:)];
     [self.view addGestureRecognizer:pan];
+    
+    // KVO 监视frame的变化
+    /**
+     *  Observer:观察者 谁想监听
+     *  KeyPath：监听的属性
+     *  options:监听新值的改变
+     */
+    [self.mainView addObserver:self forKeyPath:@"transform" options:NSKeyValueObservingOptionNew context:nil];
 
 }
+
+#pragma mark - KVO
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSString *,id> *)change context:(void *)context {
+    NSLog(@"%@",NSStringFromCGRect(self.mainView.frame));
+    if (self.mainView.frame.origin.x <= 0) {
+        self.rightView.hidden = YES;
+    } else {
+        self.rightView.hidden = NO;
+    }
+}
+
 
 #pragma mark - UIPanGestureRecognizer
 - (void)pan:(UIPanGestureRecognizer *)panGesture {
     CGPoint point = [panGesture translationInView:self.view];
-    if (point.x >= 0) {
-        self.rightView.alpha = 0;
-    } else if (point.x < 0) {
-        self.rightView.alpha = 1;
-    }
-    
-    NSLog(@"%@",NSStringFromCGPoint(point));
-    
-//    self.mainView.center = CGPointMake(100, 100);
+
     self.mainView.transform = CGAffineTransformTranslate(self.mainView.transform, point.x, 0);
     [panGesture setTranslation:CGPointZero inView:self.view];
 }
@@ -56,8 +68,6 @@
     leftView.frame = self.view.bounds;
     self.leftView = leftView;
     [self.view addSubview:leftView];
-
-//    [self addChildViewToView:self.leftView withColor:[UIColor orangeColor]];
     
     
     // 添加右边视图
@@ -66,7 +76,6 @@
     rightView.frame = self.view.bounds;
     self.rightView = rightView;
     [self.view addSubview:rightView];
-//    [self addChildViewToView:self.rightView withColor:[UIColor blueColor]];
 
     // 添加主视图
     UIView * mainView = [[UIView alloc] init];
@@ -74,7 +83,6 @@
     mainView.frame = self.view.bounds;
     self.mainView = mainView;
     [self.view addSubview:mainView];
-//    [self addChildViewToView:self.mainView withColor:[UIColor lightGrayColor]];
 }
 
 - (void)addChildViewToView:(UIView *)view withColor:(UIColor *)color {
